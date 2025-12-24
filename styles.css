@@ -18,7 +18,7 @@
     bottom: -50%;
     width: 200%;
     height: 200vh;
-    background: transparent url('http://assets.iceable.com/img/noise-transparent.png') repeat 0 0;
+    background: transparent url('https://assets.iceable.com/img/noise-transparent.png') repeat 0 0;
     background-repeat: repeat;
     animation: bg-animation .2s infinite;
     opacity: .9;
@@ -70,25 +70,26 @@
     text-decoration: none;
     font-size: 20px;
     font-family: 'Delicious Handrawn', cursive;
-    padding: 
+    padding: 5px 10px;
   }
-    a:hover {
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    
-    #player-container {
-      height: 0;
-      padding-bottom: 42%;
-      position: relative;
-      margin-top: 50px;
-    }
-    
-    #player-container iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
+  
+  a:hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  
+  #player-container {
+    height: 0;
+    padding-bottom: 42%;
+    position: relative;
+    margin-top: 50px;
+  }
+  
+  #player-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
     
