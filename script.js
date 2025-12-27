@@ -127,8 +127,11 @@ function handleLinkClick(event) {
   }
   
   // Load video with enhanced styling
-  // Note: alternateVideoId is available for future fallback implementation
+  // Note: alternateId is available for future fallback implementation
   const primaryVideoId = link.videoId;
+  
+  // Get existing canvas before replacing innerHTML
+  const existingCanvas = playerContainer.querySelector('#visualizer-canvas');
   
   playerContainer.innerHTML = `
     <iframe 
@@ -139,8 +142,19 @@ function handleLinkClick(event) {
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
       allowfullscreen>
     </iframe>
-    <canvas id="visualizer-canvas" class="visualizer-canvas" style="display: none;"></canvas>
   `;
+  
+  // Re-add the canvas element if it existed
+  if (existingCanvas) {
+    playerContainer.appendChild(existingCanvas);
+  } else {
+    // Create canvas if it doesn't exist
+    const canvas = document.createElement('canvas');
+    canvas.id = 'visualizer-canvas';
+    canvas.className = 'visualizer-canvas';
+    canvas.style.display = 'none';
+    playerContainer.appendChild(canvas);
+  }
 }
 
 // ========================================
