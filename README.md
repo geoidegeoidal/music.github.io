@@ -24,7 +24,7 @@
 
 - 📺 **Reproductor YouTube Integrado** - Disfruta de tus tracks favoritos sin salir de la terminal.
 - 🛠️ **Gestión Dinámica de Enlaces** - Añade y elimina videos de YouTube en tiempo real.
-- 🎨 **Visualizador Maestro** - 6 modos de efectos premium e inmersivos (Ethereal Sphere, Aurora Curtains, Stardust Cascade, Void Portal, Fractal Bloom, Nebula Core).
+- 🎨 **Visualizador Cyber-Master** - 6 modos optimizados de alta fidelidad (Neon Nebula, Liquid Horizon, Cyber Grid 3D, Void Portal, Stardust Cascade, Digital Sonar).
 - 💾 **Persistencia Local** - Tus enlaces personalizados se guardan automáticamente en el navegador (`localStorage`).
 - ⌨️ **Atajos de Teclado** - Control total mediante comandos rápidos.
 - 🌊 **Estética Inmersiva** - Fondo de rejilla animada, líneas de escaneo (scanlines) y efectos de glitch.
