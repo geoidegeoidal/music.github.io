@@ -58,7 +58,7 @@
 - **HTML5** - Estructura semántica
 - **CSS3** - Estilos y animaciones
 - **JavaScript (Vanilla)** - Interactividad sin frameworks
-- **YouTube Embed API** - Integración de videos
+- **YouTube Embed iframes** - Integración de videos
 - **Google Fonts** - Tipografía Delicious Handrawn
 
 ---
@@ -205,7 +205,7 @@ Este proyecto es de código abierto y está disponible bajo la licencia MIT.
 
 - Gracias a todos los creadores de música lofi en YouTube
 - Inspirado en la comunidad de música lofi hip hop
-- Efecto de ruido por [Iceable](http://www.iceable.com/)
+- Efecto de ruido inspirado en técnicas de texturización web
 
 ---
 
