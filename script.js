@@ -457,10 +457,12 @@ function startVisualizer() {
     ctx.fillStyle = 'rgba(5, 5, 8, 0.15)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Pseudo-reactivity (Simulating a beat)
+    // Enhanced Pseudo-reactivity (Simulating a beat)
     const time = Date.now() * 0.001;
-    const beat = Math.pow(Math.sin(time * 2.5), 10) * 1.5;
-    const bassPulse = 1 + beat * 0.4;
+    // Layered sine waves for a more complex "musical" rhythm
+    const rhythm = Math.sin(time * 2) * 0.5 + Math.sin(time * 4) * 0.3 + Math.sin(time * 8) * 0.2;
+    const beat = Math.pow(Math.abs(rhythm), 4) * 1.5;
+    const bassPulse = 1 + beat * 0.5;
 
     if (effects[currentEffectIndex] === 'SHATTERED SPHERE') {
       drawSphere(ctx, canvas, frame, bassPulse);
@@ -476,8 +478,8 @@ function startVisualizer() {
   function drawSphere(ctx, canvas, frame, pulse) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const count = 300;
-    const radius = Math.min(canvas.width, canvas.height) * 0.25 * pulse;
+    const count = 1000; // Más partículas
+    const radius = Math.min(canvas.width, canvas.height) * 0.28 * pulse;
 
     ctx.save();
     ctx.translate(centerX, centerY);
@@ -491,8 +493,8 @@ function startVisualizer() {
       let z = radius * Math.cos(phi);
 
       // Rotate
-      const rotX = frame * 0.01;
-      const rotY = frame * 0.015;
+      const rotX = frame * 0.008;
+      const rotY = frame * 0.012;
 
       // Y-axis rotation
       let nx = x * Math.cos(rotY) + z * Math.sin(rotY);
@@ -510,7 +512,7 @@ function startVisualizer() {
       const perspective = 600 / (600 - z);
       const px = x * perspective;
       const py = y * perspective;
-      const pSize = Math.max(0.1, 2 * perspective * pulse);
+      const pSize = Math.max(0.05, 1.2 * perspective * pulse); // Partículas más pequeñas
 
       const dist = Math.sqrt(x * x + y * y + z * z);
       const alpha = Math.max(0.2, (z + radius) / (2 * radius));
