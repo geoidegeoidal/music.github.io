@@ -121,15 +121,14 @@ function handleLinkClick(event) {
   if (isVisualizerMode) {
     stopVisualizer();
     isVisualizerMode = false;
-    visualizerBtn.textContent = '🎨 VISUALIZER MODE';
+    visualizerBtn.textContent = '🎨 VISUAL EFFECTS';
     visualizerBtn.style.borderColor = 'var(--neon-cyan)';
     visualizerBtn.style.color = 'var(--neon-cyan)';
   }
   
-  // Load video with enhanced styling - try primary ID first
-  // If it fails, the user can manually switch or we use the alternate
+  // Load video with enhanced styling
+  // Note: alternateVideoId is available for future fallback implementation
   const primaryVideoId = link.videoId;
-  const alternateVideoId = link.alternateId || primaryVideoId;
   
   playerContainer.innerHTML = `
     <iframe 
@@ -375,9 +374,9 @@ function toggleVisualizer() {
     visualizerBtn.style.borderColor = 'var(--neon-pink)';
     visualizerBtn.style.color = 'var(--neon-pink)';
     startVisualizer();
-    showNotification('Visualizer mode activated!', 'success');
+    showNotification('Visual effects activated!', 'success');
   } else {
-    visualizerBtn.textContent = '🎨 VISUALIZER MODE';
+    visualizerBtn.textContent = '🎨 VISUAL EFFECTS';
     visualizerBtn.style.borderColor = 'var(--neon-cyan)';
     visualizerBtn.style.color = 'var(--neon-cyan)';
     stopVisualizer();
@@ -403,6 +402,9 @@ function startVisualizer() {
   let hue = 180; // Start with cyan
   
   // Animation function
+  // Note: This is a decorative visualizer with procedurally generated animations
+  // For real-time audio analysis, the Web Audio API would need to be integrated
+  // with the YouTube player, which requires additional setup and permissions
   function animate() {
     if (!isVisualizerMode) return;
     
@@ -411,7 +413,6 @@ function startVisualizer() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Generate pseudo-random bars (simulating audio data)
-    // In a real implementation, this would use Web Audio API
     const time = Date.now() * 0.001;
     
     for (let i = 0; i < barCount; i++) {
@@ -539,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   console.log('%c🌆 CYBERPUNK MUSIC PLAYER 🌆', 'color: #00f3ff; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px #00f3ff;');
   console.log('%cSystem initialized. Ready to jack in...', 'color: #ff00ff; font-size: 14px;');
-  console.log('%cKeyboard Shortcuts: Ctrl+A (Add Link) | Ctrl+R (Remove Link) | Ctrl+V (Visualizer)', 'color: #a0a0ff; font-size: 12px;');
+  console.log('%cKeyboard Shortcuts: Ctrl+A (Add Link) | Ctrl+R (Remove Link) | Ctrl+V (Visual Effects)', 'color: #a0a0ff; font-size: 12px;');
 });
 
 // Load links when script loads
