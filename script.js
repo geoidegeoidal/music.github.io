@@ -7,42 +7,50 @@ const musicLinks = [
   {
     name: "Lofi Hip Hop",
     category: "Beats to Relax",
-    videoId: "jfKfPfyJRdk"
+    videoId: "jfKfPfyJRdk",
+    alternateId: "5qap5aO4i9A" // Lofi Girl - beats to relax/study to
   },
   {
     name: "Synthwave Mix",
     category: "Cyberpunk Vibes",
-    videoId: "4xDzrJKXOOY"
+    videoId: "4xDzrJKXOOY",
+    alternateId: "MVPTGNGiI-4" // The Midnight - Synthwave Mix
   },
   {
     name: "Chillwave",
     category: "Dreamy Sounds",
-    videoId: "UedTcufyrHc"
+    videoId: "UedTcufyrHc",
+    alternateId: "rUxyKA_-grg" // ChilledCow - Chillhop Music
   },
   {
     name: "Cyberpunk 2077",
     category: "Game Soundtrack",
-    videoId: "P0Ggoot0l3g"
+    videoId: "P0Ggoot0l3g",
+    alternateId: "P_B_GalsJrE" // Cyberpunk 2077 Radio Mix
   },
   {
     name: "Dark Synthwave",
     category: "Night Drive",
-    videoId: "qk07gNH95yE"
+    videoId: "qk07gNH95yE",
+    alternateId: "qk07gNH95yE" // Dark Synthwave Mix
   },
   {
     name: "Lofi Jazz",
     category: "Study Music",
-    videoId: "Dx5qFachd3A"
+    videoId: "Dx5qFachd3A",
+    alternateId: "DWcJFNfaw9c" // Lofi Jazz Hip Hop Mix
   },
   {
     name: "Outrun",
     category: "Retro Wave",
-    videoId: "MV_3Dpw-BRY"
+    videoId: "MV_3Dpw-BRY",
+    alternateId: "MV_3Dpw-BRY" // Outrun Mix
   },
   {
     name: "Blade Runner",
     category: "Ambient Sci-Fi",
-    videoId: "RScZrvTebeA"
+    videoId: "RScZrvTebeA",
+    alternateId: "RScZrvTebeA" // Blade Runner Blues
   }
 ];
 
@@ -54,6 +62,18 @@ const playerContainer = document.querySelector('#player-container');
 const navLinksContainer = document.querySelector('#nav-links');
 const addLinkBtn = document.querySelector('#add-link-btn');
 const removeLinkBtn = document.querySelector('#remove-link-btn');
+const visualizerBtn = document.querySelector('#visualizer-btn');
+
+// ========================================
+// VISUALIZER STATE
+// ========================================
+
+let isVisualizerMode = false;
+let visualizerAnimation = null;
+
+function getVisualizerCanvas() {
+  return document.querySelector('#visualizer-canvas');
+}
 
 // ========================================
 // INITIALIZE LINKS
@@ -86,6 +106,8 @@ function handleLinkClick(event) {
   event.preventDefault();
   
   const videoId = event.currentTarget.dataset.videoId;
+  const index = parseInt(event.currentTarget.dataset.index);
+  const link = musicLinks[index];
   
   // Remove active class from all links
   document.querySelectorAll('.nav-link').forEach(link => {
@@ -95,15 +117,30 @@ function handleLinkClick(event) {
   // Add active class to clicked link
   event.currentTarget.classList.add('active');
   
-  // Load video with enhanced styling
+  // Stop visualizer if active
+  if (isVisualizerMode) {
+    stopVisualizer();
+    isVisualizerMode = false;
+    visualizerBtn.textContent = '🎨 VISUALIZER MODE';
+    visualizerBtn.style.borderColor = 'var(--neon-cyan)';
+    visualizerBtn.style.color = 'var(--neon-cyan)';
+  }
+  
+  // Load video with enhanced styling - try primary ID first
+  // If it fails, the user can manually switch or we use the alternate
+  const primaryVideoId = link.videoId;
+  const alternateVideoId = link.alternateId || primaryVideoId;
+  
   playerContainer.innerHTML = `
     <iframe 
+      id="youtube-player"
       width="100%" 
       height="100%" 
-      src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
+      src="https://www.youtube.com/embed/${primaryVideoId}?autoplay=1&enablejsapi=1" 
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
       allowfullscreen>
     </iframe>
+    <canvas id="visualizer-canvas" class="visualizer-canvas" style="display: none;"></canvas>
   `;
 }
 
@@ -327,11 +364,151 @@ function loadLinksFromCookie() {
 }
 
 // ========================================
+// VISUALIZER FUNCTIONALITY
+// ========================================
+
+function toggleVisualizer() {
+  isVisualizerMode = !isVisualizerMode;
+  
+  if (isVisualizerMode) {
+    visualizerBtn.textContent = '📺 VIDEO MODE';
+    visualizerBtn.style.borderColor = 'var(--neon-pink)';
+    visualizerBtn.style.color = 'var(--neon-pink)';
+    startVisualizer();
+    showNotification('Visualizer mode activated!', 'success');
+  } else {
+    visualizerBtn.textContent = '🎨 VISUALIZER MODE';
+    visualizerBtn.style.borderColor = 'var(--neon-cyan)';
+    visualizerBtn.style.color = 'var(--neon-cyan)';
+    stopVisualizer();
+    showNotification('Video mode activated!', 'success');
+  }
+}
+
+function startVisualizer() {
+  const visualizerCanvas = getVisualizerCanvas();
+  if (!visualizerCanvas) return;
+  
+  visualizerCanvas.style.display = 'block';
+  const canvas = visualizerCanvas;
+  const ctx = canvas.getContext('2d');
+  
+  // Set canvas size
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  
+  // Visualizer styles
+  const barCount = 64;
+  const barWidth = canvas.width / barCount;
+  let hue = 180; // Start with cyan
+  
+  // Animation function
+  function animate() {
+    if (!isVisualizerMode) return;
+    
+    // Clear canvas with fade effect
+    ctx.fillStyle = 'rgba(0, 10, 20, 0.2)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Generate pseudo-random bars (simulating audio data)
+    // In a real implementation, this would use Web Audio API
+    const time = Date.now() * 0.001;
+    
+    for (let i = 0; i < barCount; i++) {
+      // Create wave-like pattern
+      const normalizedIndex = i / barCount;
+      const wave1 = Math.sin(time * 2 + normalizedIndex * Math.PI * 2) * 0.5 + 0.5;
+      const wave2 = Math.sin(time * 3 + normalizedIndex * Math.PI * 4) * 0.3 + 0.5;
+      const wave3 = Math.sin(time * 1.5 + normalizedIndex * Math.PI) * 0.2 + 0.5;
+      
+      const barHeight = (wave1 * wave2 * wave3) * canvas.height * 0.8;
+      const x = i * barWidth;
+      const y = canvas.height - barHeight;
+      
+      // Create gradient for each bar
+      const gradient = ctx.createLinearGradient(x, y, x, canvas.height);
+      
+      // Cycle through neon colors
+      const barHue = (hue + i * 2) % 360;
+      gradient.addColorStop(0, `hsla(${barHue}, 100%, 60%, 0.9)`);
+      gradient.addColorStop(1, `hsla(${barHue + 30}, 100%, 50%, 0.7)`);
+      
+      // Draw bar
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x, y, barWidth - 2, barHeight);
+      
+      // Add glow effect
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = `hsla(${barHue}, 100%, 60%, 0.8)`;
+    }
+    
+    // Slowly change hue for color cycling
+    hue = (hue + 0.5) % 360;
+    
+    // Draw center circle (like Windows Media Player)
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 80 + Math.sin(time * 2) * 20;
+    
+    const circleGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+    circleGradient.addColorStop(0, 'rgba(0, 243, 255, 0.3)');
+    circleGradient.addColorStop(0.5, 'rgba(189, 0, 255, 0.2)');
+    circleGradient.addColorStop(1, 'rgba(255, 0, 255, 0)');
+    
+    ctx.fillStyle = circleGradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw rotating particles
+    const particleCount = 12;
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (time + i / particleCount) * Math.PI * 2;
+      const particleRadius = radius + 40;
+      const px = centerX + Math.cos(angle) * particleRadius;
+      const py = centerY + Math.sin(angle) * particleRadius;
+      
+      ctx.fillStyle = `hsla(${(hue + i * 30) % 360}, 100%, 60%, 0.6)`;
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = `hsla(${(hue + i * 30) % 360}, 100%, 60%, 0.9)`;
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    visualizerAnimation = requestAnimationFrame(animate);
+  }
+  
+  animate();
+}
+
+function stopVisualizer() {
+  if (visualizerAnimation) {
+    cancelAnimationFrame(visualizerAnimation);
+    visualizerAnimation = null;
+  }
+  const visualizerCanvas = getVisualizerCanvas();
+  if (visualizerCanvas) {
+    visualizerCanvas.style.display = 'none';
+  }
+}
+
+// Handle window resize for visualizer
+window.addEventListener('resize', () => {
+  const visualizerCanvas = getVisualizerCanvas();
+  if (isVisualizerMode && visualizerCanvas) {
+    visualizerCanvas.width = visualizerCanvas.offsetWidth;
+    visualizerCanvas.height = visualizerCanvas.offsetHeight;
+  }
+});
+
+// ========================================
 // EVENT LISTENERS
 // ========================================
 
 addLinkBtn.addEventListener('click', showAddLinkModal);
 removeLinkBtn.addEventListener('click', showRemoveLinkModal);
+visualizerBtn.addEventListener('click', toggleVisualizer);
 
 // ========================================
 // INITIALIZE ON LOAD
@@ -353,11 +530,16 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       showRemoveLinkModal();
     }
+    // Press 'V' to toggle visualizer
+    if (e.key === 'v' && e.ctrlKey) {
+      e.preventDefault();
+      toggleVisualizer();
+    }
   });
   
   console.log('%c🌆 CYBERPUNK MUSIC PLAYER 🌆', 'color: #00f3ff; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px #00f3ff;');
   console.log('%cSystem initialized. Ready to jack in...', 'color: #ff00ff; font-size: 14px;');
-  console.log('%cKeyboard Shortcuts: Ctrl+A (Add Link) | Ctrl+R (Remove Link)', 'color: #a0a0ff; font-size: 12px;');
+  console.log('%cKeyboard Shortcuts: Ctrl+A (Add Link) | Ctrl+R (Remove Link) | Ctrl+V (Visualizer)', 'color: #a0a0ff; font-size: 12px;');
 });
 
 // Load links when script loads
