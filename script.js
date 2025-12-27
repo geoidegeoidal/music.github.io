@@ -74,6 +74,13 @@ let currentEffectIndex = 0;
 let visualizerAnimation = null;
 const effects = ['SHATTERED SPHERE', 'NEON WAVES', 'DIGITAL STORM'];
 
+// Audio API State
+let audioContext = null;
+let analyser = null;
+let dataArray = null;
+let source = null;
+let audioInitStarted = false;
+
 function getVisualizerCanvas() {
   return document.querySelector('#visualizer-canvas');
 }
@@ -383,10 +390,36 @@ function loadLinksFromCookie() {
 // VISUALIZER FUNCTIONALITY
 // ========================================
 
+async function initAudio() {
+  if (audioInitStarted) return;
+  audioInitStarted = true;
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    source = audioContext.createMediaStreamSource(stream);
+
+    source.connect(analyser);
+    analyser.fftSize = 256;
+
+    const bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+
+    showNotification('Microphone synced successfully!', 'success');
+  } catch (err) {
+    console.error('Audio initialization failed:', err);
+    showNotification('Mic access denied. Using simulated beats.', 'error');
+    audioInitStarted = false; // Allow retry
+  }
+}
+
 function toggleVisualizer() {
   isVisualizerMode = !isVisualizerMode;
 
   if (isVisualizerMode) {
+    if (!audioContext) initAudio();
+
     visualizerBtn.textContent = '📺 VIDEO MODE';
     visualizerBtn.style.borderColor = 'var(--neon-pink)';
     visualizerBtn.style.color = 'var(--neon-pink)';
@@ -457,12 +490,33 @@ function startVisualizer() {
     ctx.fillStyle = 'rgba(5, 5, 8, 0.15)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Enhanced Pseudo-reactivity (Simulating a beat)
-    const time = Date.now() * 0.001;
-    // Layered sine waves for a more complex "musical" rhythm
-    const rhythm = Math.sin(time * 2) * 0.5 + Math.sin(time * 4) * 0.3 + Math.sin(time * 8) * 0.2;
-    const beat = Math.pow(Math.abs(rhythm), 4) * 1.5;
-    const bassPulse = 1 + beat * 0.5;
+    // Reactivity Logic
+    let bassPulse = 1;
+    let midPulse = 1;
+
+    if (analyser && dataArray) {
+      analyser.getByteFrequencyData(dataArray);
+
+      // Calculate averages for different frequency bands
+      // Bass is usually 0-10 in an array of size 128 (fftSize 256)
+      let bassSum = 0;
+      for (let i = 0; i < 10; i++) bassSum += dataArray[i];
+      let bassAvg = bassSum / 10;
+
+      // Mid frequencies
+      let midSum = 0;
+      for (let i = 10; i < 40; i++) midSum += dataArray[i];
+      let midAvg = midSum / 30;
+
+      bassPulse = 1 + (bassAvg / 255) * 1.2;
+      midPulse = 1 + (midAvg / 255) * 0.8;
+    } else {
+      // Fallback to simulation if mic is not available
+      const time = Date.now() * 0.001;
+      const rhythm = Math.sin(time * 2) * 0.5 + Math.sin(time * 4) * 0.3 + Math.sin(time * 8) * 0.2;
+      const beat = Math.pow(Math.abs(rhythm), 4) * 1.5;
+      bassPulse = 1 + beat * 0.5;
+    }
 
     if (effects[currentEffectIndex] === 'SHATTERED SPHERE') {
       drawSphere(ctx, canvas, frame, bassPulse);
