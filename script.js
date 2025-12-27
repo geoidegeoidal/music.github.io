@@ -72,7 +72,7 @@ const changeEffectBtn = document.querySelector('#change-effect-btn');
 let isVisualizerMode = false;
 let currentEffectIndex = 0;
 let visualizerAnimation = null;
-const effects = ['SHATTERED SPHERE', 'NEON WAVES', 'DIGITAL STORM'];
+const effects = ['SHATTERED SPHERE', 'NEON WAVES', 'DIGITAL STORM', 'CYBER TUNNEL', 'KALEIDO GLITCH', 'NEBULA FLUX'];
 
 // Audio API State
 let audioContext = null;
@@ -524,6 +524,12 @@ function startVisualizer() {
       drawWaves(ctx, canvas, frame, bassPulse);
     } else if (effects[currentEffectIndex] === 'DIGITAL STORM') {
       drawStorm(ctx, canvas, frame, bassPulse, particles);
+    } else if (effects[currentEffectIndex] === 'CYBER TUNNEL') {
+      drawTunnel(ctx, canvas, frame, bassPulse, midPulse);
+    } else if (effects[currentEffectIndex] === 'KALEIDO GLITCH') {
+      drawKaleido(ctx, canvas, frame, bassPulse);
+    } else if (effects[currentEffectIndex] === 'NEBULA FLUX') {
+      drawNebula(ctx, canvas, frame, bassPulse, midPulse, particles);
     }
 
     visualizerAnimation = requestAnimationFrame(animate);
@@ -625,6 +631,99 @@ function startVisualizer() {
       ctx.fillStyle = 'rgba(0, 243, 255, 0.3)';
       ctx.fillRect(0, Math.random() * canvas.height, canvas.width, 2);
     }
+  }
+
+  function drawTunnel(ctx, canvas, frame, pulse, midPulse) {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const rings = 15;
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(frame * 0.01 * pulse);
+
+    for (let i = 0; i < rings; i++) {
+      const z = (i * 50 + frame * 2 * pulse) % (rings * 50);
+      const size = (rings * 50 - z) * 2 * pulse;
+      const alpha = 1 - z / (rings * 50);
+
+      ctx.strokeStyle = i % 2 === 0 ? `rgba(0, 243, 255, ${alpha})` : `rgba(255, 0, 255, ${alpha})`;
+      ctx.lineWidth = 2 * midPulse;
+      ctx.strokeRect(-size / 2, -size / 2, size, size);
+
+      // Secondary spinning squares
+      ctx.save();
+      ctx.rotate(i * 0.5);
+      ctx.strokeRect(-size / 4, -size / 4, size / 2, size / 2);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function drawKaleido(ctx, canvas, frame, pulse) {
+    const slices = 8;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+
+    for (let i = 0; i < slices; i++) {
+      ctx.rotate((Math.PI * 2) / slices);
+
+      // Glitchy lines
+      ctx.beginPath();
+      const colorHue = (frame + i * 40) % 360;
+      ctx.strokeStyle = `hsla(${colorHue}, 100%, 50%, ${0.5 * pulse})`;
+      ctx.lineWidth = 5 * pulse;
+
+      const x = Math.sin(frame * 0.05) * 200 * pulse;
+      const y = Math.cos(frame * 0.05) * 200;
+
+      ctx.moveTo(0, 0);
+      ctx.lineTo(x, y);
+      ctx.lineTo(y, x);
+      ctx.stroke();
+
+      // Additional shapes
+      ctx.fillStyle = `hsla(${colorHue + 180}, 100%, 50%, 0.3)`;
+      ctx.fillRect(x / 2, y / 2, 20 * pulse, 20 * pulse);
+    }
+    ctx.restore();
+
+    // RGB split simulation
+    if (pulse > 1.4) {
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+      ctx.fillRect(Math.random() * 10 - 5, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(0, 0, 255, 0.2)';
+      ctx.fillRect(Math.random() * 10 - 5, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+  }
+
+  function drawNebula(ctx, canvas, frame, pulse, midPulse, particles) {
+    particles.forEach((p, i) => {
+      const time = frame * 0.01;
+      p.angle += 0.01 * p.speed;
+
+      // Swirl behavior
+      const radius = p.distance * midPulse;
+      const x = canvas.width / 2 + Math.cos(p.angle) * radius;
+      const y = canvas.height / 2 + Math.sin(p.angle) * radius;
+
+      ctx.beginPath();
+      const hue = (p.angle * 50 + frame) % 360;
+      ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${0.4 * pulse})`;
+      ctx.arc(x, y, p.size * 5 * pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Connections
+      if (i % 20 === 0) {
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = `hsla(${hue}, 100%, 50%, 1)`;
+      }
+    });
   }
 
   animate();
