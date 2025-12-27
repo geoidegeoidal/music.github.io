@@ -24,7 +24,7 @@
 
 - 📺 **Reproductor YouTube Integrado** - Disfruta de tus tracks favoritos sin salir de la terminal.
 - 🛠️ **Gestión Dinámica de Enlaces** - Añade y elimina videos de YouTube en tiempo real.
-- 🎨 **Visualizador de Efectos** - Modo de efectos visuales procedimentales para una mayor inmersión.
+- 🎨 **Visualizador Avanzado** - 3 modos de efectos visuales (Shattered Sphere, Neon Waves, Digital Storm).
 - 💾 **Persistencia Local** - Tus enlaces personalizados se guardan automáticamente en el navegador (`localStorage`).
 - ⌨️ **Atajos de Teclado** - Control total mediante comandos rápidos.
 - 🌊 **Estética Inmersiva** - Fondo de rejilla animada, líneas de escaneo (scanlines) y efectos de glitch.
@@ -34,9 +34,9 @@
 
 ## 🚀 Tecnologías Utilizadas
 
-- **HTML5** - Estructura semántica avanzada.
+- **HTML5** - Estructura semántica avanzada y API de `Canvas`.
 - **CSS3 (Custom Properties & Animations)** - Sistema de diseño basado en variables neón y animaciones complejas.
-- **JavaScript (Vanilla)** - Lógica de gestión de estado y manipulación del DOM sin dependencias externas.
+- **JavaScript (Vanilla)** - Lógica de gestión de estado, manipulación del DOM y renderizado 2D/3D procedural.
 - **YouTube Iframe API** - Integración robusta del reproductor.
 - **Google Fonts** - Tipografías *Orbitron* y *Rajdhani* para ese acabado futurista.
 
@@ -49,6 +49,7 @@
 | `Ctrl + A` | **Add**: Abrir consola para añadir nuevo enlace |
 | `Ctrl + R` | **Remove**: Abrir consola para eliminar enlaces |
 | `Ctrl + V` | **Visuals**: Alternar entre modo Video y Visualizador |
+| `Ctrl + E` | **Effect**: Cambiar al siguiente efecto visual |
 
 ---
 

@@ -63,13 +63,16 @@ const navLinksContainer = document.querySelector('#nav-links');
 const addLinkBtn = document.querySelector('#add-link-btn');
 const removeLinkBtn = document.querySelector('#remove-link-btn');
 const visualizerBtn = document.querySelector('#visualizer-btn');
+const changeEffectBtn = document.querySelector('#change-effect-btn');
 
 // ========================================
 // VISUALIZER STATE
 // ========================================
 
 let isVisualizerMode = false;
+let currentEffectIndex = 0;
 let visualizerAnimation = null;
+const effects = ['SHATTERED SPHERE', 'NEON WAVES', 'DIGITAL STORM'];
 
 function getVisualizerCanvas() {
   return document.querySelector('#visualizer-canvas');
@@ -81,7 +84,7 @@ function getVisualizerCanvas() {
 
 function initializeLinks() {
   navLinksContainer.innerHTML = '';
-  
+
   musicLinks.forEach((link, index) => {
     const linkElement = document.createElement('a');
     linkElement.className = 'nav-link';
@@ -92,7 +95,7 @@ function initializeLinks() {
       <span class="link-name">${link.name}</span>
       <span class="link-category">${link.category}</span>
     `;
-    
+
     linkElement.addEventListener('click', handleLinkClick);
     navLinksContainer.appendChild(linkElement);
   });
@@ -104,19 +107,19 @@ function initializeLinks() {
 
 function handleLinkClick(event) {
   event.preventDefault();
-  
+
   const videoId = event.currentTarget.dataset.videoId;
   const index = parseInt(event.currentTarget.dataset.index);
   const link = musicLinks[index];
-  
+
   // Remove active class from all links
   document.querySelectorAll('.nav-link').forEach(link => {
     link.classList.remove('active');
   });
-  
+
   // Add active class to clicked link
   event.currentTarget.classList.add('active');
-  
+
   // Stop visualizer if active
   if (isVisualizerMode) {
     stopVisualizer();
@@ -125,14 +128,14 @@ function handleLinkClick(event) {
     visualizerBtn.style.borderColor = 'var(--neon-cyan)';
     visualizerBtn.style.color = 'var(--neon-cyan)';
   }
-  
+
   // Load video with enhanced styling
   // Note: alternateId is available for future fallback implementation
   const primaryVideoId = link.videoId;
-  
+
   // Get existing canvas before replacing innerHTML
   const existingCanvas = playerContainer.querySelector('#visualizer-canvas');
-  
+
   playerContainer.innerHTML = `
     <iframe 
       id="youtube-player"
@@ -143,7 +146,7 @@ function handleLinkClick(event) {
       allowfullscreen>
     </iframe>
   `;
-  
+
   // Re-add the canvas element if it existed
   if (existingCanvas) {
     playerContainer.appendChild(existingCanvas);
@@ -178,7 +181,7 @@ function showAddLinkModal() {
       showNotification('Link added successfully!', 'success');
     }
   });
-  
+
   document.body.appendChild(modal);
 }
 
@@ -191,11 +194,11 @@ function showRemoveLinkModal() {
     showNotification('No links to remove!', 'error');
     return;
   }
-  
+
   const modal = document.createElement('div');
   modal.className = 'modal active';
-  
-  let optionsHTML = musicLinks.map((link, index) => 
+
+  let optionsHTML = musicLinks.map((link, index) =>
     `<div style="margin: 10px 0;">
       <label style="display: flex; align-items: center; cursor: pointer;">
         <input type="checkbox" value="${index}" style="width: auto; margin-right: 10px;">
@@ -203,7 +206,7 @@ function showRemoveLinkModal() {
       </label>
     </div>`
   ).join('');
-  
+
   modal.innerHTML = `
     <div class="modal-content">
       <h2>Remove Links</h2>
@@ -217,32 +220,32 @@ function showRemoveLinkModal() {
       </div>
     </div>
   `;
-  
+
   const cancelBtn = modal.querySelector('.cancel');
   const confirmBtn = modal.querySelector('.confirm');
-  
+
   cancelBtn.addEventListener('click', () => {
     modal.remove();
   });
-  
+
   confirmBtn.addEventListener('click', () => {
     const checkboxes = modal.querySelectorAll('input[type="checkbox"]:checked');
     const indicesToRemove = Array.from(checkboxes).map(cb => parseInt(cb.value));
-    
+
     if (indicesToRemove.length > 0) {
       // Remove in reverse order to maintain correct indices
       indicesToRemove.sort((a, b) => b - a).forEach(index => {
         musicLinks.splice(index, 1);
       });
-      
+
       initializeLinks();
       saveLinksToCookie();
       showNotification(`${indicesToRemove.length} link(s) removed!`, 'success');
     }
-    
+
     modal.remove();
   });
-  
+
   document.body.appendChild(modal);
 }
 
@@ -253,14 +256,14 @@ function showRemoveLinkModal() {
 function createModal(title, fields, onConfirm) {
   const modal = document.createElement('div');
   modal.className = 'modal active';
-  
+
   const fieldsHTML = fields.map(field => `
     <div>
       <label for="${field.id}">${field.label}</label>
       <input type="text" id="${field.id}" placeholder="${field.placeholder}">
     </div>
   `).join('');
-  
+
   modal.innerHTML = `
     <div class="modal-content">
       <h2>${title}</h2>
@@ -271,14 +274,14 @@ function createModal(title, fields, onConfirm) {
       </div>
     </div>
   `;
-  
+
   const cancelBtn = modal.querySelector('.cancel');
   const confirmBtn = modal.querySelector('.confirm');
-  
+
   cancelBtn.addEventListener('click', () => {
     modal.remove();
   });
-  
+
   confirmBtn.addEventListener('click', () => {
     const data = {};
     fields.forEach(field => {
@@ -286,11 +289,11 @@ function createModal(title, fields, onConfirm) {
       const key = field.id.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
       data[key] = input.value;
     });
-    
+
     onConfirm(data);
     modal.remove();
   });
-  
+
   return modal;
 }
 
@@ -315,9 +318,9 @@ function showNotification(message, type = 'success') {
     box-shadow: 0 0 20px ${type === 'success' ? 'var(--neon-cyan)' : 'var(--neon-magenta)'};
   `;
   notification.textContent = message;
-  
+
   document.body.appendChild(notification);
-  
+
   setTimeout(() => {
     notification.style.animation = 'slideOut 0.3s ease';
     setTimeout(() => notification.remove(), 300);
@@ -382,118 +385,192 @@ function loadLinksFromCookie() {
 
 function toggleVisualizer() {
   isVisualizerMode = !isVisualizerMode;
-  
+
   if (isVisualizerMode) {
     visualizerBtn.textContent = '📺 VIDEO MODE';
     visualizerBtn.style.borderColor = 'var(--neon-pink)';
     visualizerBtn.style.color = 'var(--neon-pink)';
+    changeEffectBtn.style.display = 'inline-block';
     startVisualizer();
-    showNotification('Visual effects activated!', 'success');
+    showNotification(`Visuals activated: ${effects[currentEffectIndex]}`, 'success');
   } else {
     visualizerBtn.textContent = '🎨 VISUAL EFFECTS';
     visualizerBtn.style.borderColor = 'var(--neon-cyan)';
     visualizerBtn.style.color = 'var(--neon-cyan)';
+    changeEffectBtn.style.display = 'none';
     stopVisualizer();
     showNotification('Video mode activated!', 'success');
+  }
+}
+
+function changeEffect() {
+  currentEffectIndex = (currentEffectIndex + 1) % effects.length;
+  showNotification(`Effect: ${effects[currentEffectIndex]}`, 'success');
+
+  // Restart with new effect
+  if (isVisualizerMode) {
+    stopVisualizer();
+    startVisualizer();
   }
 }
 
 function startVisualizer() {
   const visualizerCanvas = getVisualizerCanvas();
   if (!visualizerCanvas) return;
-  
+
   visualizerCanvas.style.display = 'block';
   const canvas = visualizerCanvas;
   const ctx = canvas.getContext('2d');
-  
+
   // Set canvas size
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
-  
-  // Visualizer styles
-  const barCount = 64;
-  const barWidth = canvas.width / barCount;
-  let hue = 180; // Start with cyan
-  
-  // Animation function
-  // Note: This is a decorative visualizer with procedurally generated animations
-  // For real-time audio analysis, the Web Audio API would need to be integrated
-  // with the YouTube player, which requires additional setup and permissions
+
+  // State for effects
+  let frame = 0;
+  const particles = [];
+
+  // Initialize particles for sphere/storm
+  function initParticles(count) {
+    particles.length = 0;
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        z: Math.random() * 1000 - 500,
+        size: Math.random() * 2 + 1,
+        speed: Math.random() * 2 + 0.5,
+        angle: Math.random() * Math.PI * 2,
+        distance: Math.random() * 200 + 50,
+        color: i % 2 === 0 ? 'var(--neon-cyan)' : 'var(--neon-pink)'
+      });
+    }
+  }
+
+  initParticles(200);
+
   function animate() {
     if (!isVisualizerMode) return;
-    
-    // Clear canvas with fade effect
-    ctx.fillStyle = 'rgba(0, 10, 20, 0.2)';
+    frame++;
+
+    // Clear canvas
+    ctx.fillStyle = 'rgba(5, 5, 8, 0.15)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Generate pseudo-random bars (simulating audio data)
+
+    // Pseudo-reactivity (Simulating a beat)
     const time = Date.now() * 0.001;
-    
-    for (let i = 0; i < barCount; i++) {
-      // Create wave-like pattern
-      const normalizedIndex = i / barCount;
-      const wave1 = Math.sin(time * 2 + normalizedIndex * Math.PI * 2) * 0.5 + 0.5;
-      const wave2 = Math.sin(time * 3 + normalizedIndex * Math.PI * 4) * 0.3 + 0.5;
-      const wave3 = Math.sin(time * 1.5 + normalizedIndex * Math.PI) * 0.2 + 0.5;
-      
-      const barHeight = (wave1 * wave2 * wave3) * canvas.height * 0.8;
-      const x = i * barWidth;
-      const y = canvas.height - barHeight;
-      
-      // Create gradient for each bar
-      const gradient = ctx.createLinearGradient(x, y, x, canvas.height);
-      
-      // Cycle through neon colors
-      const barHue = (hue + i * 2) % 360;
-      gradient.addColorStop(0, `hsla(${barHue}, 100%, 60%, 0.9)`);
-      gradient.addColorStop(1, `hsla(${barHue + 30}, 100%, 50%, 0.7)`);
-      
-      // Draw bar
-      ctx.fillStyle = gradient;
-      ctx.fillRect(x, y, barWidth - 2, barHeight);
-      
-      // Add glow effect
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = `hsla(${barHue}, 100%, 60%, 0.8)`;
+    const beat = Math.pow(Math.sin(time * 2.5), 10) * 1.5;
+    const bassPulse = 1 + beat * 0.4;
+
+    if (effects[currentEffectIndex] === 'SHATTERED SPHERE') {
+      drawSphere(ctx, canvas, frame, bassPulse);
+    } else if (effects[currentEffectIndex] === 'NEON WAVES') {
+      drawWaves(ctx, canvas, frame, bassPulse);
+    } else if (effects[currentEffectIndex] === 'DIGITAL STORM') {
+      drawStorm(ctx, canvas, frame, bassPulse, particles);
     }
-    
-    // Slowly change hue for color cycling
-    hue = (hue + 0.5) % 360;
-    
-    // Draw center circle (like Windows Media Player)
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = 80 + Math.sin(time * 2) * 20;
-    
-    const circleGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-    circleGradient.addColorStop(0, 'rgba(0, 243, 255, 0.3)');
-    circleGradient.addColorStop(0.5, 'rgba(189, 0, 255, 0.2)');
-    circleGradient.addColorStop(1, 'rgba(255, 0, 255, 0)');
-    
-    ctx.fillStyle = circleGradient;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Draw rotating particles
-    const particleCount = 12;
-    for (let i = 0; i < particleCount; i++) {
-      const angle = (time + i / particleCount) * Math.PI * 2;
-      const particleRadius = radius + 40;
-      const px = centerX + Math.cos(angle) * particleRadius;
-      const py = centerY + Math.sin(angle) * particleRadius;
-      
-      ctx.fillStyle = `hsla(${(hue + i * 30) % 360}, 100%, 60%, 0.6)`;
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = `hsla(${(hue + i * 30) % 360}, 100%, 60%, 0.9)`;
-      ctx.beginPath();
-      ctx.arc(px, py, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
+
     visualizerAnimation = requestAnimationFrame(animate);
   }
-  
+
+  function drawSphere(ctx, canvas, frame, pulse) {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const count = 300;
+    const radius = Math.min(canvas.width, canvas.height) * 0.25 * pulse;
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+
+    for (let i = 0; i < count; i++) {
+      const phi = Math.acos(-1 + (2 * i) / count);
+      const theta = Math.sqrt(count * Math.PI) * phi;
+
+      let x = radius * Math.cos(theta) * Math.sin(phi);
+      let y = radius * Math.sin(theta) * Math.sin(phi);
+      let z = radius * Math.cos(phi);
+
+      // Rotate
+      const rotX = frame * 0.01;
+      const rotY = frame * 0.015;
+
+      // Y-axis rotation
+      let nx = x * Math.cos(rotY) + z * Math.sin(rotY);
+      let nz = -x * Math.sin(rotY) + z * Math.cos(rotY);
+      x = nx;
+      z = nz;
+
+      // X-axis rotation
+      let ny = y * Math.cos(rotX) - z * Math.sin(rotX);
+      nz = y * Math.sin(rotX) + z * Math.cos(rotX);
+      y = ny;
+      z = nz;
+
+      // Perspective
+      const perspective = 600 / (600 - z);
+      const px = x * perspective;
+      const py = y * perspective;
+      const pSize = Math.max(0.1, 2 * perspective * pulse);
+
+      const dist = Math.sqrt(x * x + y * y + z * z);
+      const alpha = Math.max(0.2, (z + radius) / (2 * radius));
+
+      ctx.fillStyle = i % 2 === 0 ? `rgba(0, 243, 255, ${alpha})` : `rgba(255, 0, 255, ${alpha})`;
+      ctx.shadowBlur = 5 * pulse;
+      ctx.shadowColor = ctx.fillStyle;
+
+      ctx.beginPath();
+      ctx.arc(px, py, pSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawWaves(ctx, canvas, frame, pulse) {
+    const lines = 12;
+    const spacing = canvas.height / (lines + 1);
+
+    for (let j = 0; j < lines; j++) {
+      ctx.beginPath();
+      ctx.lineWidth = 2 * pulse;
+      const hue = (180 + j * 15 + frame * 0.5) % 360;
+      ctx.strokeStyle = `hsla(${hue}, 100%, 60%, 0.6)`;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = ctx.strokeStyle;
+
+      for (let i = 0; i < canvas.width; i += 5) {
+        const yOffset = Math.sin(i * 0.01 + frame * 0.05 + j) * 40 * pulse;
+        const y = (j + 1) * spacing + yOffset;
+        if (i === 0) ctx.moveTo(i, y);
+        else ctx.lineTo(i, y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  function drawStorm(ctx, canvas, frame, pulse, particles) {
+    particles.forEach(p => {
+      p.y += p.speed * 5 * pulse;
+      if (p.y > canvas.height) {
+        p.y = -10;
+        p.x = Math.random() * canvas.width;
+      }
+
+      ctx.fillStyle = p.color;
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = p.color;
+
+      const length = 15 * p.speed * pulse;
+      ctx.fillRect(p.x, p.y, 2, length);
+    });
+
+    // Add glitch lines occasionally
+    if (Math.random() > 0.95) {
+      ctx.fillStyle = 'rgba(0, 243, 255, 0.3)';
+      ctx.fillRect(0, Math.random() * canvas.height, canvas.width, 2);
+    }
+  }
+
   animate();
 }
 
@@ -524,6 +601,7 @@ window.addEventListener('resize', () => {
 addLinkBtn.addEventListener('click', showAddLinkModal);
 removeLinkBtn.addEventListener('click', showRemoveLinkModal);
 visualizerBtn.addEventListener('click', toggleVisualizer);
+changeEffectBtn.addEventListener('click', changeEffect);
 
 // ========================================
 // INITIALIZE ON LOAD
@@ -532,7 +610,7 @@ visualizerBtn.addEventListener('click', toggleVisualizer);
 document.addEventListener('DOMContentLoaded', () => {
   loadLinksFromCookie();
   initializeLinks();
-  
+
   // Add keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     // Press 'A' to add link
@@ -550,11 +628,16 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       toggleVisualizer();
     }
+    // Press 'E' to change effect
+    if (e.key === 'e' && e.ctrlKey) {
+      e.preventDefault();
+      changeEffect();
+    }
   });
-  
+
   console.log('%c🌆 CYBERPUNK MUSIC PLAYER 🌆', 'color: #00f3ff; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px #00f3ff;');
   console.log('%cSystem initialized. Ready to jack in...', 'color: #ff00ff; font-size: 14px;');
-  console.log('%cKeyboard Shortcuts: Ctrl+A (Add Link) | Ctrl+R (Remove Link) | Ctrl+V (Visual Effects)', 'color: #a0a0ff; font-size: 12px;');
+  console.log('%cKeyboard Shortcuts: Ctrl+A (Add) | Ctrl+R (Remove) | Ctrl+V (Visuals) | Ctrl+E (Change Effect)', 'color: #a0a0ff; font-size: 12px;');
 });
 
 // Load links when script loads
