@@ -72,7 +72,7 @@ const changeEffectBtn = document.querySelector('#change-effect-btn');
 let isVisualizerMode = false;
 let currentEffectIndex = 0;
 let visualizerAnimation = null;
-const effects = ['NEON ORB', 'SILK FLOW', 'ZEN RAIN', 'INFINITY CIRCLE', 'SACRED MANDALA', 'COSMIC MIST'];
+const effects = ['ETHEREAL SPHERE', 'AURORA CURTAINS', 'STARDUST CASCADE', 'VOID PORTAL', 'FRACTAL BLOOM', 'NEBULA CORE'];
 
 // Audio API State
 let audioContext = null;
@@ -518,31 +518,32 @@ function startVisualizer() {
       bassPulse = 1 + beat * 0.5;
     }
 
-    if (effects[currentEffectIndex] === 'NEON ORB') {
-      drawOrb(ctx, canvas, frame, bassPulse);
-    } else if (effects[currentEffectIndex] === 'SILK FLOW') {
-      drawSilk(ctx, canvas, frame, bassPulse);
-    } else if (effects[currentEffectIndex] === 'ZEN RAIN') {
-      drawRain(ctx, canvas, frame, bassPulse, particles);
-    } else if (effects[currentEffectIndex] === 'INFINITY CIRCLE') {
-      drawCircleTunnel(ctx, canvas, frame, bassPulse, midPulse);
-    } else if (effects[currentEffectIndex] === 'SACRED MANDALA') {
-      drawMandala(ctx, canvas, frame, bassPulse);
-    } else if (effects[currentEffectIndex] === 'COSMIC MIST') {
-      drawMist(ctx, canvas, frame, bassPulse, midPulse, particles);
+    if (effects[currentEffectIndex] === 'ETHEREAL SPHERE') {
+      drawEthereal(ctx, canvas, frame, bassPulse);
+    } else if (effects[currentEffectIndex] === 'AURORA CURTAINS') {
+      drawAurora(ctx, canvas, frame, bassPulse);
+    } else if (effects[currentEffectIndex] === 'STARDUST CASCADE') {
+      drawStardust(ctx, canvas, frame, bassPulse, particles);
+    } else if (effects[currentEffectIndex] === 'VOID PORTAL') {
+      drawVoid(ctx, canvas, frame, bassPulse, midPulse);
+    } else if (effects[currentEffectIndex] === 'FRACTAL BLOOM') {
+      drawFractal(ctx, canvas, frame, bassPulse);
+    } else if (effects[currentEffectIndex] === 'NEBULA CORE') {
+      drawNebulaCore(ctx, canvas, frame, bassPulse, midPulse, particles);
     }
 
     visualizerAnimation = requestAnimationFrame(animate);
   }
 
-  function drawOrb(ctx, canvas, frame, pulse) {
+  function drawEthereal(ctx, canvas, frame, pulse) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const count = 1200;
-    const radius = Math.min(canvas.width, canvas.height) * 0.25 * pulse;
+    const count = 2000; // High density
+    const radius = Math.min(canvas.width, canvas.height) * 0.28 * pulse;
 
     ctx.save();
     ctx.translate(centerX, centerY);
+    ctx.globalCompositeOperation = 'lighter';
 
     for (let i = 0; i < count; i++) {
       const phi = Math.acos(-1 + (2 * i) / count);
@@ -552,149 +553,189 @@ function startVisualizer() {
       let y = radius * Math.sin(theta) * Math.sin(phi);
       let z = radius * Math.cos(phi);
 
-      const rotX = frame * 0.005;
-      const rotY = frame * 0.007;
-
-      let nx = x * Math.cos(rotY) + z * Math.sin(rotY);
-      let nz = -x * Math.sin(rotY) + z * Math.cos(rotY);
+      const rot = frame * 0.005;
+      let nx = x * Math.cos(rot) + z * Math.sin(rot);
+      let nz = -x * Math.sin(rot) + z * Math.cos(rot);
       x = nx; z = nz;
 
-      let ny = y * Math.cos(rotX) - z * Math.sin(rotX);
-      nz = y * Math.sin(rotX) + z * Math.cos(rotX);
-      y = ny; z = nz;
-
-      const perspective = 800 / (800 - z);
+      const perspective = 1000 / (1000 - z);
       const px = x * perspective;
       const py = y * perspective;
-      const pSize = Math.max(0.05, 1.0 * perspective * pulse);
 
-      const alpha = Math.max(0.1, (z + radius) / (2 * radius)) * 0.6;
-      ctx.fillStyle = i % 2 === 0 ? `rgba(0, 243, 255, ${alpha})` : `rgba(189, 0, 255, ${alpha})`;
+      const hue = (i * 0.1 + frame * 0.5) % 360;
+      const alpha = Math.max(0.1, (z + radius) / (2 * radius)) * pulse * 0.5;
+
+      ctx.fillStyle = `hsla(${hue}, 100%, 70%, ${alpha})`;
+      ctx.shadowBlur = 10 * pulse;
+      ctx.shadowColor = ctx.fillStyle;
 
       ctx.beginPath();
-      ctx.arc(px, py, pSize, 0, Math.PI * 2);
+      ctx.arc(px, py, 1.2 * perspective, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
   }
 
-  function drawSilk(ctx, canvas, frame, pulse) {
-    const lines = 8;
-    const spacing = canvas.height / (lines + 1);
+  function drawAurora(ctx, canvas, frame, pulse) {
+    const layers = 5;
+    ctx.globalCompositeOperation = 'screen';
 
-    for (let j = 0; j < lines; j++) {
+    for (let l = 0; l < layers; l++) {
       ctx.beginPath();
-      ctx.lineWidth = 1.5 * pulse;
-      const hue = (200 + j * 10 + frame * 0.2) % 360;
-      ctx.strokeStyle = `hsla(${hue}, 80%, 60%, ${0.3 * pulse})`;
+      const hue = (160 + l * 40 + frame * 0.1) % 360;
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(0.5, `hsla(${hue}, 100%, 50%, ${0.2 * pulse})`);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
 
-      for (let i = 0; i < canvas.width; i += 10) {
-        const yOffset = Math.sin(i * 0.005 + frame * 0.02 + j) * 60 * pulse;
-        const y = (j + 1) * spacing + yOffset;
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 40 + l * 20;
+
+      for (let i = 0; i < canvas.width; i += 20) {
+        const yOffset = Math.sin(i * 0.002 + frame * 0.01 + l) * 150 * pulse;
+        const y = canvas.height / 2 + yOffset;
         if (i === 0) ctx.moveTo(i, y);
-        else ctx.bezierCurveTo(i - 5, y, i - 5, y, i, y);
+        else ctx.bezierCurveTo(i - 10, y - 50, i - 10, y + 50, i, y);
       }
       ctx.stroke();
     }
+    ctx.globalCompositeOperation = 'source-over';
   }
 
-  function drawRain(ctx, canvas, frame, pulse, particles) {
-    particles.forEach(p => {
-      p.y += p.speed * 2 * pulse; // Slower, more peaceful
+  function drawStardust(ctx, canvas, frame, pulse, particles) {
+    ctx.globalCompositeOperation = 'lighter';
+    particles.forEach((p, i) => {
+      p.y += p.speed * 1.5 * pulse;
+      p.x += Math.sin(frame * 0.01 + i) * 0.5;
+
       if (p.y > canvas.height) {
         p.y = -20;
         p.x = Math.random() * canvas.width;
       }
 
-      const opacity = Math.min(0.4, (p.speed / 2) * pulse);
-      ctx.fillStyle = p.color === 'var(--neon-cyan)' ? `rgba(0, 243, 255, ${opacity})` : `rgba(189, 0, 255, ${opacity})`;
+      const hue = (frame * 0.5 + p.y * 0.1) % 360;
+      ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${0.6 * pulse})`;
+      ctx.shadowBlur = 15 * pulse;
+      ctx.shadowColor = ctx.fillStyle;
 
-      const length = 20 * p.speed * pulse;
-      ctx.fillRect(p.x, p.y, 1, length);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Trail
+      ctx.beginPath();
+      ctx.strokeStyle = `hsla(${hue}, 100%, 50%, ${0.1 * pulse})`;
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x, p.y - 40 * pulse);
+      ctx.stroke();
     });
+    ctx.globalCompositeOperation = 'source-over';
   }
 
-  function drawCircleTunnel(ctx, canvas, frame, pulse, midPulse) {
+  function drawVoid(ctx, canvas, frame, pulse, midPulse) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const rings = 12;
+    const rings = 20;
 
     ctx.save();
     ctx.translate(centerX, centerY);
+    ctx.globalCompositeOperation = 'screen';
 
     for (let i = 0; i < rings; i++) {
-      const z = (i * 60 + frame * 1.5 * pulse) % (rings * 60);
-      const radius = (rings * 60 - z) * pulse;
-      const alpha = (1 - z / (rings * 60)) * 0.5;
+      const z = (i * 40 + frame * 2 * pulse) % (rings * 40);
+      const radius = (rings * 40 - z) * 1.5 * pulse;
+      const alpha = (1 - z / (rings * 40)) * pulse;
 
       ctx.beginPath();
-      ctx.strokeStyle = i % 2 === 0 ? `rgba(0, 243, 255, ${alpha})` : `rgba(189, 0, 255, ${alpha})`;
-      ctx.lineWidth = 1 * midPulse;
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
-      ctx.stroke();
+      const hue = (frame + i * 10) % 360;
+      ctx.strokeStyle = `hsla(${hue}, 100%, 60%, ${alpha * 0.5})`;
+      ctx.lineWidth = 3 * midPulse;
+      ctx.shadowBlur = 20 * pulse;
+      ctx.shadowColor = ctx.strokeStyle;
 
-      // Secondary aura
-      ctx.beginPath();
-      ctx.strokeStyle = `rgba(189, 0, 255, ${alpha * 0.2})`;
-      ctx.arc(0, 0, radius * 1.2, 0, Math.PI * 2);
+      // Draw hex polygons instead of circles
+      const sides = 6;
+      for (let s = 0; s <= sides; s++) {
+        const ang = (s / sides) * Math.PI * 2 + frame * 0.01;
+        const x = Math.cos(ang) * radius;
+        const y = Math.sin(ang) * radius;
+        if (s === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
       ctx.stroke();
     }
     ctx.restore();
+    ctx.globalCompositeOperation = 'source-over';
   }
 
-  function drawMandala(ctx, canvas, frame, pulse) {
-    const slices = 12;
+  function drawFractal(ctx, canvas, frame, pulse) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
+    const petals = 8;
 
     ctx.save();
     ctx.translate(centerX, centerY);
-    ctx.rotate(frame * 0.005);
+    ctx.globalCompositeOperation = 'lighter';
 
-    for (let i = 0; i < slices; i++) {
-      ctx.rotate((Math.PI * 2) / slices);
+    for (let i = 0; i < petals; i++) {
+      ctx.rotate((Math.PI * 2) / petals);
+      const hue = (frame * 0.5 + i * 45) % 360;
 
       ctx.beginPath();
-      const hue = (220 + i * 15) % 360;
-      ctx.strokeStyle = `hsla(${hue}, 70%, 70%, ${0.4 * pulse})`;
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${0.4 * pulse})`;
+      ctx.lineWidth = 2;
 
-      const x = Math.sin(frame * 0.02) * 150 * pulse;
-      const y = Math.cos(frame * 0.02) * 150;
+      for (let j = 0; j < 3; j++) {
+        const size = 100 * (j + 1) * pulse;
+        const x = Math.sin(frame * 0.02) * size;
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(size, -size, size, size, 0, size * 1.5);
+        ctx.stroke();
+      }
 
-      ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(x, y, 0, 200 * pulse);
-      ctx.stroke();
-
-      // Soft circles at ends
-      ctx.fillStyle = `hsla(${hue}, 80%, 80%, ${0.2 * pulse})`;
+      // Glowing centers
+      ctx.fillStyle = `hsla(${hue}, 100%, 50%, ${0.2 * pulse})`;
       ctx.beginPath();
-      ctx.arc(0, 200 * pulse, 5 * pulse, 0, Math.PI * 2);
+      ctx.arc(0, 200 * pulse, 30 * pulse, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
+    ctx.globalCompositeOperation = 'source-over';
   }
 
-  function drawMist(ctx, canvas, frame, pulse, midPulse, particles) {
-    ctx.globalAlpha = 0.5;
+  function drawNebulaCore(ctx, canvas, frame, pulse, midPulse, particles) {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // Core glow
+    const coreGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 300 * pulse);
+    coreGrad.addColorStop(0, `rgba(189, 0, 255, ${0.1 * pulse})`);
+    coreGrad.addColorStop(0.5, `rgba(0, 243, 255, ${0.05 * pulse})`);
+    coreGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = coreGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.globalCompositeOperation = 'screen';
     particles.forEach((p, i) => {
-      p.angle += 0.005 * p.speed;
+      p.angle += 0.003 * p.speed * pulse;
+      const radius = p.distance * midPulse * (1 + Math.sin(frame * 0.01) * 0.2);
 
-      const radius = p.distance * midPulse * 1.5;
-      const x = canvas.width / 2 + Math.cos(p.angle) * radius;
-      const y = canvas.height / 2 + Math.sin(p.angle) * radius;
+      const x = centerX + Math.cos(p.angle) * radius;
+      const y = centerY + Math.sin(p.angle) * radius;
 
-      ctx.beginPath();
-      const hue = (240 + p.distance * 0.1 + frame * 0.1) % 360;
-      const grad = ctx.createRadialGradient(x, y, 0, x, y, p.size * 10 * pulse);
-      grad.addColorStop(0, `hsla(${hue}, 90%, 70%, ${0.3 * pulse})`);
+      const hue = (p.angle * 100 + frame * 0.2) % 360;
+      const pSize = p.size * 20 * pulse;
+
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, pSize);
+      grad.addColorStop(0, `hsla(${hue}, 100%, 70%, ${0.3 * pulse})`);
       grad.addColorStop(1, 'rgba(0,0,0,0)');
 
       ctx.fillStyle = grad;
-      ctx.arc(x, y, p.size * 15 * pulse, 0, Math.PI * 2);
+      ctx.beginPath();
+      ctx.arc(x, y, pSize, 0, Math.PI * 2);
       ctx.fill();
     });
-    ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = 'source-over';
   }
 
   animate();
