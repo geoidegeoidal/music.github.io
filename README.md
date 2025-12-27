@@ -24,7 +24,7 @@
 
 - 📺 **Reproductor YouTube Integrado** - Disfruta de tus tracks favoritos sin salir de la terminal.
 - 🛠️ **Gestión Dinámica de Enlaces** - Añade y elimina videos de YouTube en tiempo real.
-- 🎨 **Visualizador Galáctico** - 6 modos de efectos visuales (Shattered Sphere, Neon Waves, Digital Storm, Cyber Tunnel, Kaleido Glitch, Nebula Flux).
+- 🎨 **Visualizador Zen** - 6 modos de efectos visuales relajantes (Neon Orb, Silk Flow, Zen Rain, Infinity Circle, Sacred Mandala, Cosmic Mist).
 - 💾 **Persistencia Local** - Tus enlaces personalizados se guardan automáticamente en el navegador (`localStorage`).
 - ⌨️ **Atajos de Teclado** - Control total mediante comandos rápidos.
 - 🌊 **Estética Inmersiva** - Fondo de rejilla animada, líneas de escaneo (scanlines) y efectos de glitch.
